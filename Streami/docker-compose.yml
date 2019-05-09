@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmquser
+      - RABBITMQ_DEFAULT_PASS=DEBmbwkSrzy9D1T9cJfa
+
+  sql.data:
+    image: microsoft/mssql-server-linux:latest
+
+  nosql.data:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  usersapi:
+    image: yasenm/usersapi
+    build:
+      context: .
+      dockerfile: UsersApi/Dockerfile
+    depends_on:
+      - rabbitmq
+      - nosql.data
+
+  mediaapi:
+    image: yasenm/mediaapi
+    build:
+      context: .
+      dockerfile: MediaApi/Dockerfile
+    depends_on:
+      - rabbitmq
+
+volumes:
+  sqlserverdata:
+    external: true    
+  rabbitmqdata:
+    external: true

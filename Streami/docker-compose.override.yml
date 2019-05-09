@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  sql.data:
+    volumes:
+      - sqlserverdata:/var/opt/mssql 
+    environment:
+      - SA_PASSWORD=${SQLPass}
+      - ACCEPT_EULA=Y
+    ports:
+      - "1434:1433"    # Important: In a production environment your should remove the external port
+
+  usersapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_HTTPS_PORT=5001
+    ports:
+      - "64440:80"
+      - "5001:443"
+    volumes:
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  mediaapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_HTTPS_PORT=5002
+      - ConnectionString="server=sql.data;user id=sa;password=${SQLPass};database=UserManagement;"
+    ports:
+      - "49611:80"
+      - "5002:443"
+    volumes:
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
